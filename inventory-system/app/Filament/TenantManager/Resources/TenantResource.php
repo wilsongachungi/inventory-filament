@@ -4,6 +4,7 @@ namespace App\Filament\TenantManager\Resources;
 
 use App\Filament\TenantManager\Resources\TenantResource\Pages;
 use App\Filament\TenantManager\Resources\TenantResource\RelationManagers;
+use App\Filament\TenantManager\Resources\TenantResource\RelationManagers\UserRelationManager;
 use App\Models\Tenant;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -23,7 +24,20 @@ class TenantResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Section::make()
+                ->schema([
+                    Forms\Components\TextInput::make("name")
+                    ->label(_("Tenant Name"))
+                    ->required(),
+
+                    Forms\Components\TextInput::make("email")
+                    ->label(_("Email"))
+                    ->required(),
+
+                    Forms\Components\TextInput::make("contact")
+                    ->label(_("Contact"))
+                    ->required(),
+                ])
             ]);
     }
 
@@ -33,15 +47,18 @@ class TenantResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make("name")
                 ->label(_("Tenant Name"))
-                ->searchable(),
+                ->searchable()
+                ->sortable(),
 
                 Tables\Columns\TextColumn::make("email")
                 ->label(_("Email"))
-                ->searchable(),
+                ->searchable()
+                ->sortable(),
 
                 Tables\Columns\TextColumn::make("contact")
                 ->label(_("Contact"))
-                ->searchable(),
+                ->searchable()
+                ->sortable(),
             ])
             ->filters([
                 //
@@ -59,7 +76,7 @@ class TenantResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            UserRelationManager::class
         ];
     }
 
