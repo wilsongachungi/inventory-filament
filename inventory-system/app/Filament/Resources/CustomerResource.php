@@ -30,28 +30,7 @@ class CustomerResource extends Resource
             ->schema([
                 Forms\Components\Section::make()
                 ->columns(2)
-                ->schema([
-                    Forms\Components\TextInput::make("name")
-                    ->label(_("Name"))
-                    ->required(),
-
-                    Forms\Components\TextInput::make("email")
-                    ->label(_("Email"))
-                    ->email(),
-
-                    Forms\Components\TextInput::make("contact")
-                    ->label(_("Contact"))
-                    ->required(),
-
-                    Forms\Components\TextInput::make("address")
-                    ->label(_("Address")),
-
-                    Forms\Components\KeyValue::make("data")
-                    ->label(_("Extra Details"))
-
-
-
-                ])
+                ->schema(self::getCustomerFormSchema())
             ]);
     }
 
@@ -103,6 +82,30 @@ class CustomerResource extends Resource
             'index' => Pages\ListCustomers::route('/'),
             'create' => Pages\CreateCustomer::route('/create'),
             'edit' => Pages\EditCustomer::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getCustomerFormSchema()
+    {
+        return [
+            Forms\Components\TextInput::make("name")
+            ->label(_("Name"))
+            ->required(),
+
+            Forms\Components\TextInput::make("email")
+            ->label(_("Email"))
+            ->email(),
+
+            Forms\Components\TextInput::make("contact")
+            ->label(_("Contact"))
+            ->required(),
+
+            Forms\Components\TextInput::make("address")
+            ->label(_("Address")),
+
+            Forms\Components\KeyValue::make("data")
+            ->label(_("Extra Details"))
+
         ];
     }
 }
