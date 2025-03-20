@@ -9,29 +9,25 @@ class Purchase extends Model
     protected $guarded = [];
 
     protected $casts = [
-        "data"=>"json"
+        "data" => "json"
     ];
-
 
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    //purchase belongs to providers
+    // Purchase belongs to a provider
     public function provider()
     {
         return $this->belongsTo(Provider::class);
     }
 
-    //purchase have many products
+    // Purchase has many products via the purchase_products pivot table
     public function products()
     {
-        return $this->hasMany(PurchaseProduct::class);
+        return $this->belongsToMany(Product::class, 'purchase_products')
+                    ->withPivot('price', 'quantity', 'data');  // Access pivot data like price, quantity, and data
     }
+}
 
-    public function purchases()
-{
-    return $this->hasMany(Purchase::class);
-}
-}

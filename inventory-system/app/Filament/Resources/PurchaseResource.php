@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Purchase;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PurchaseResource\Pages;
@@ -42,8 +43,14 @@ class PurchaseResource extends Resource
                 Forms\Components\Select::make('provider_id')
                     ->relationship('provider', 'name')
                     ->createOptionForm(function(){
-                        return CustomerResource::getCustomerFormSchema();
-                    })
+
+                        $tenantField = [
+                            Forms\Components\Hidden::make('tenant_id')
+                            ->default(Filament::getTenant()->id)
+                            ->label(__('Tenant'))
+                        ];
+                    return array_merge(CustomerResource::getCustomerFormSchema(),$tenantField);
+             })
                     ->required(),
 
                 Forms\Components\TextInput::make('invoice_no')
@@ -62,8 +69,12 @@ class PurchaseResource extends Resource
                 Forms\Components\Repeater::make('products')
                 ->columns(4)
                     ->schema([
+                        Forms\Components\Select::make('product_id')
+                        ->label(__('product'))
+                        ->options(Product::pluck('name','id')->toArray())
+                        ->searchable()
+                        ->required(),
 
-                        // Stock & Pricing Section
                         Forms\Components\Section::make(__('Stock & Pricing'))
                             ->columns(4)
                             ->schema([
@@ -72,22 +83,16 @@ class PurchaseResource extends Resource
                                     ->reactive()
                                     ->numeric()
                                     ->required()
-                                    ->afterStateUpdated(function (callable $get, Set $set) {
-                                        $price = (float) $get('regular_price');
-                                        $quantity = (int) $get('quantity');
-                                        $set('total', $price * $quantity);
-                                    }),
+                                    ->debounce(500)
+                                    ->afterStateUpdated(fn (Callable $get, Set $set)=>self::updateFormData($get, $set)),
 
                                 Forms\Components\TextInput::make('quantity')
                                     ->label(__('Stock Quantity'))
                                     ->reactive()
                                     ->numeric()
                                     ->default(1)
-                                    ->afterStateUpdated(function (callable $get, Set $set) {
-                                        $price = (float) $get('regular_price');
-                                        $quantity = (int) $get('quantity');
-                                        $set('total', $price * $quantity);
-                                    }),
+                                    ->debounce(500)
+                                    ->afterStateUpdated(fn (Callable $get, Set $set)=>self::updateFormData($get, $set)),
 
                                 Forms\Components\TextInput::make('total')
                                     ->label(__('Total'))
@@ -100,14 +105,29 @@ class PurchaseResource extends Resource
                                     ->default(0)
                                     ->helperText('Minimum stock before restocking.'),
 
-                                Forms\Components\TextInput::make('discounted_price')
-                                    ->label(__('Discounted Price'))
-                                    ->numeric()
-                                    ->nullable(),
+                            
                             ]),
                     ]),
             ]),
 
+            Forms\Components\Section::make(__('Batch & Expiry'))
+            ->columns(3)
+            ->schema([
+                Forms\Components\TextInput::make('sub_total')
+                ->label(__('Sub Total'))
+                ->numeric()
+                ->required(),
+
+                Forms\Components\TextInput::make('discounted_price')
+                ->label(__('Discounted Price'))
+                ->numeric()
+                ->required(),
+
+                Forms\Components\TextInput::make('net_total')
+                ->label(__('Net Total'))
+                ->numeric()
+                ->required(),
+            ]),
         // Batch & Expiry
         Forms\Components\Section::make(__('Batch & Expiry'))
             ->columns(2)
@@ -148,6 +168,25 @@ class PurchaseResource extends Resource
             ]),
     ]);
 
+  }
+
+  public static function updateFormData($get,$set)
+  {
+    $FormData = $get('../../');
+    $allProducts = $FormData['products'] ?? [];
+    $grandTotal = 0;
+    foreach($allProducts as $product)
+    {
+        $price = $product['regular_price'] ?? 0;
+        $quantity = $product['quantity'] ?? 0;
+        $total = $price * $quantity;
+        $grandTotal += $total;
+    }
+    $price =  $get('regular_price');
+    $quantity = $get('quantity');
+    $total = $price * $quantity;
+    $set('total', $total);
+    $set('../../sub_total',$grandTotal);
   }
 
     public static function table(Table $table): Table
