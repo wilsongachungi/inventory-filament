@@ -245,6 +245,7 @@ Forms\Components\Section::make(__('Products Details'))
                 Tables\Actions\Action::make("view_invoice")
                 ->label(__("View Invoice"))
                 ->icon(__("heroicon-o-document"))
+                ->url(fn($record)=>self::getUrl("invoice",['record'=> $record->id]))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -266,6 +267,7 @@ Forms\Components\Section::make(__('Products Details'))
             'index' => Pages\ListPurchases::route('/'),
             'create' => Pages\CreatePurchase::route('/create'),
             'edit' => Pages\EditPurchase::route('/{record}/edit'),
+            'invoice' => Pages\Invoice::route('/{record}/invoice')
         ];
     }
 }
