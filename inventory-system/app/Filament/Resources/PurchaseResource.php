@@ -242,6 +242,9 @@ Forms\Components\Section::make(__('Products Details'))
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make("view_invoice")
+                ->label(__("View Invoice"))
+                ->icon(__("heroicon-o-document"))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
