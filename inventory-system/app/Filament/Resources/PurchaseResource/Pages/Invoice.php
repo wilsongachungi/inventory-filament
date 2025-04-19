@@ -28,6 +28,9 @@ class Invoice extends Page
             Action::make('print')
             ->label(__("Print"))
             ->icon('heroicon-o-printer')
+            ->requiresConfirmation()
+            ->url(fn () => route('PRINT.PURCHASE_INVOICE', ['id' => $this->record]))
+    ->openUrlInNewTab()
         ];
     }
 

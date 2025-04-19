@@ -23,9 +23,19 @@ class Purchase extends Model
         return $this->belongsTo(Provider::class);
     }
 
+    // public function category()
+    // {
+    //     return $this->hasMany(Category::class);
+    // }
+
     public function products()
     {
         return $this->hasMany(PurchaseProduct::class);
+    }
+
+    public function invoiceRecords()
+    {
+        return $this->hasMany(InvoiceRecord::class);
     }
 
 }

@@ -44,4 +44,9 @@ class Tenant extends Model
     {
         return $this->hasMany(Purchase::class);
     }
+
+    public function settinngs()
+    {
+        return $this->hasMany(TenantSetting::class);
+    }
 }

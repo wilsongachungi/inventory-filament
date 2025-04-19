@@ -17,8 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\PurchaseResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\PurchaseResource\RelationManagers;
-use App\Filament\Resources\PurchaseResource\RelationManagers\ProductRelationManager;
 use App\Filament\Resources\PurchaseResource\RelationManagers\ProductsRelationManager;
+use App\Filament\Resources\ManagerResource\RelationManagers\InvoiceRecordsRelationManager;
 
 class PurchaseResource extends Resource
 {
@@ -215,27 +215,27 @@ Forms\Components\Section::make(__('Products Details'))
                 ->label(__('Provider')),
 
 
-            Tables\Columns\TextColumn::make('category.name')
-                ->label(__('Category'))
-                ->sortable()
-                ->searchable(),
+            // Tables\Columns\TextColumn::make('category.name')
+            //     ->label(__('Category'))
+            //     ->sortable()
+            //     ->searchable(),
 
-            Tables\Columns\TextColumn::make('unit.name')
-                ->label(__('Unit'))
-                ->sortable()
-                ->searchable(),
+            // Tables\Columns\TextColumn::make('unit.name')
+            //     ->label(__('Unit'))
+            //     ->sortable()
+            //     ->searchable(),
 
-            Tables\Columns\TextColumn::make('quantity')
-                ->label(__('Stock Quantity'))
-                ->sortable(),
+            // Tables\Columns\TextColumn::make('quantity')
+            //     ->label(__('Stock Quantity'))
+            //     ->sortable(),
 
-            Tables\Columns\TextColumn::make('price')
-                ->label(__('Price'))
-                ->sortable(),
+            // Tables\Columns\TextColumn::make('price')
+            //     ->label(__('Price'))
+            //     ->sortable(),
 
-            Tables\Columns\TextColumn::make('discounted_price')
-                ->label(__('Discounted Price'))
-                ->sortable(),
+            // Tables\Columns\TextColumn::make('discount')
+            //     ->label(__('Discounted Price'))
+            //     ->sortable(),
             ])
             ->filters([
                 //
@@ -257,7 +257,8 @@ Forms\Components\Section::make(__('Products Details'))
     public static function getRelations(): array
     {
         return [
-            ProductsRelationManager::make()
+            ProductsRelationManager::make(),
+            InvoiceRecordsRelationManager::make()
         ];
     }
 
