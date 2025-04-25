@@ -8,9 +8,10 @@
     <div class="border-b pb-6 mb-6 flex items-center">
         <div class="flex-1">
             <img src="/your-logo.png" alt="Logo" class="h-10 w-auto mb-2">
-            <p class="text-sm text-gray-600">123 Business Street, Nairobi, Kenya</p>
-            <p class="text-sm text-gray-600">Phone: 0700 000000</p>
-            <p class="text-sm text-gray-600">Email: info@company.com</p>
+            <p class="text-sm text-gray-600">{{ $settings['Tenant Name'] }}</p>
+            <p class="text-sm text-gray-600">{{ $settings['Address'] }}</p>
+            {{-- <p class="text-sm text-gray-600">{{ $settings['Zip'] }}</p> --}}
+            <p class="text-sm text-gray-600">{{ $settings['Email'] }}</p>
         </div>
         <div class="text-right">
             <h1 class="text-3xl font-bold text-gray-600 uppercase">Invoice</h1>

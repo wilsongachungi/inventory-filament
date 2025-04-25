@@ -54,10 +54,21 @@ class PurchaseResource extends Resource
                     return array_merge(CustomerResource::getCustomerFormSchema(),$tenantField);
              })
                     ->required(),
-
-                Forms\Components\TextInput::make('invoice_no')
+                    Forms\Components\TextInput::make('invoice_no')
                     ->label('Invoice Number')
-                    ->required(),
+                    ->default(function () {
+                        $lastInvoice = \App\Models\Purchase::orderBy('id', 'desc')->first();
+
+                        $nextNumber = $lastInvoice
+                            ? intval(preg_replace('/[^0-9]/', '', $lastInvoice->invoice_no)) + 1
+                            : 1001;
+
+                        return 'INV-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+                    })
+                    ->required()
+                    ->maxLength(255),
+
+
 
                 Forms\Components\DatePicker::make('purchase_date')
                     ->label('Purchase Date')
@@ -127,7 +138,6 @@ Forms\Components\Section::make(__('Products Details'))
                 Forms\Components\TextInput::make('discounted_price')
                 ->label(__('Discounted Price'))
                 ->numeric()
-                ->required()
                 ->reactive()
                 ->afterStateUpdated(function(callable $get, Set $set){
                     $discount = $get('discounted_price') ?? 0;
