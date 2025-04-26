@@ -49,4 +49,9 @@ class Tenant extends Model
     {
         return $this->hasMany(TenantSetting::class);
     }
+
+    public function sales()
+    {
+        return $this->hasMany(Sale::class);
+    }
 }

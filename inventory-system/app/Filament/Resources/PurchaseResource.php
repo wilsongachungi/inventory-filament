@@ -57,7 +57,7 @@ class PurchaseResource extends Resource
                     Forms\Components\TextInput::make('invoice_no')
                     ->label('Invoice Number')
                     ->default(function () {
-                        $lastInvoice = \App\Models\Purchase::orderBy('id', 'desc')->first();
+                        $lastInvoice = Purchase::orderBy('id', 'desc')->first();
 
                         $nextNumber = $lastInvoice
                             ? intval(preg_replace('/[^0-9]/', '', $lastInvoice->invoice_no)) + 1
@@ -67,8 +67,6 @@ class PurchaseResource extends Resource
                     })
                     ->required()
                     ->maxLength(255),
-
-
 
                 Forms\Components\DatePicker::make('purchase_date')
                     ->label('Purchase Date')

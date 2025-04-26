@@ -58,12 +58,11 @@ class ProductResource extends Resource
     {
         return [
             Forms\Components\TextInput::make('name')
-                ->label(__('Product Name'))
-                ,
+                ->label(__('Product Name')),
 
             Forms\Components\TextInput::make('code')
                 ->label(__('Product Code'))
-                ->required(),
+                ->nullable(),
 
             Forms\Components\Select::make('category_id')
                 ->label(__('Category'))
@@ -128,6 +127,14 @@ class ProductResource extends Resource
             Tables\Columns\TextColumn::make('discounted_price')
                 ->label(__('Discounted Price'))
                 ->sortable(),
+
+            Tables\Columns\TextColumn::make('created_at')
+                ->label('Created')
+                ->since() // ➜ shows "2 hours ago", "3 days ago", etc.
+                ->sortable(),
+
         ];
+
     }
+
 }
