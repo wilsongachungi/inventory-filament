@@ -39,11 +39,11 @@ class PurchaseResource extends Resource
     return $form
     ->schema([
         // Provider Details
-        Forms\Components\Section::make('Provider Details')
+        Forms\Components\Section::make('Customer Details')
             ->columns(3)
             ->schema([
-                Forms\Components\Select::make('provider_id')
-                    ->relationship('provider', 'name')
+                Forms\Components\Select::make('customer_id')
+                    ->relationship('customer', 'name')
                     ->createOptionForm(function(){
 
                         $tenantField = [
@@ -219,8 +219,8 @@ Forms\Components\Section::make(__('Products Details'))
                 Tables\Columns\TextColumn::make('invoice_no')
                 ->label(__('Invoice No')),
 
-            Tables\Columns\TextColumn::make('provider.name')
-                ->label(__('Provider')),
+            Tables\Columns\TextColumn::make('customer.name')
+                ->label(__('Customer')),
 
 
             // Tables\Columns\TextColumn::make('category.name')

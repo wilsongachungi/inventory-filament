@@ -3,13 +3,13 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
+use App\Models\Sale;
 use Filament\Tables;
 use App\Models\Product;
-use App\Models\Sale;
 use App\Models\Customer;
-use Filament\Resources\Resource;
-use Filament\Tables\Table;
 use Filament\Forms\Form;
+use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use App\Filament\Resources\SaleResource\Pages;
 
 class SaleResource extends Resource
@@ -18,7 +18,7 @@ class SaleResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return _('Manage Sales');
+        return __('Manage Sales');
     }
 
     protected static ?string $navigationGroup = 'Sales Management';
@@ -27,41 +27,78 @@ class SaleResource extends Resource
     {
         return $form
             ->schema([
-                // Select product
                 Forms\Components\Select::make('product_id')
                     ->label('Product')
                     ->options(Product::all()->pluck('name', 'id'))
-                    ->required(),
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, Forms\Set $set) {
+                        // When product is changed, reset price choice and unit price
+                        $set('price_type', null);
+                        $set('unit_price', null);
+                    }),
 
-                // Select customer with option to create a new customer
-                Forms\Components\Select::make('customer_id')
-                ->label('Customer')
-                ->relationship(
-                    name: 'customer',
-                    titleAttribute: 'name',
-                    modifyQueryUsing: fn ($query) => $query->orderBy('name')
-                )
-                ->required()
-                // ->searchable()
-                ->createOptionForm(CustomerResource::getCustomerFormSchema()),
+                Forms\Components\Radio::make('price_type')
+                    ->label('Choose Price Type')
+                    ->options([
+                        'regular' => 'Regular Price',
+                        'discounted' => 'Discounted Price',
+                    ])
+                    ->required()
+                    ->reactive()
+                    ->visible(fn(Forms\Get $get) => $get('product_id')) // Show only if product selected
+                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                        $product = Product::find($get('product_id'));
+                        if ($product) {
+                            if ($state === 'discounted' && $product->discounted_price !== null) {
+                                $set('unit_price', $product->discounted_price);
+                            } else {
+                                $set('unit_price', $product->regular_price);
+                            }
+                        }
+                    }),
+
+                Forms\Components\TextInput::make('unit_price')
+                    ->label('Unit Price')
+                    ->numeric()
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                        $quantity = $get('quantity') ?? 0;
+                        $set('total_price', $state * $quantity);
+                    }),
 
                 Forms\Components\TextInput::make('quantity')
                     ->label('Quantity')
                     ->numeric()
-                    ->required(),
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                        $unitPrice = $get('unit_price') ?? 0;
+                        $set('total_price', $state * $unitPrice);
+                    }),
 
-                // Total price input
                 Forms\Components\TextInput::make('total_price')
                     ->label('Total Price')
                     ->numeric()
                     ->required(),
 
-                // Date picker for the date of sale
+                Forms\Components\Select::make('customer_id')
+                    ->label('Customer')
+                    ->relationship(
+                        name: 'customer',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn($query) => $query->orderBy('name')
+                    )
+                    ->required()
+                    ->createOptionForm(CustomerResource::getCustomerFormSchema()),
+
                 Forms\Components\DatePicker::make('sold_at')
                     ->label('Sold At')
                     ->required(),
             ]);
     }
+
 
     public static function table(Table $table): Table
     {
@@ -73,17 +110,20 @@ class SaleResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                // Display quantity sold in the table
+                Tables\Columns\TextColumn::make('unit_price')
+                    ->label('Price')
+                    ->sortable(),
+
+                // Display quantity sold
                 Tables\Columns\TextColumn::make('quantity')
                     ->label('Quantity Sold')
                     ->sortable(),
 
-                // Display total price in the table
                 Tables\Columns\TextColumn::make('total_price')
                     ->label('Total Price')
                     ->sortable(),
 
-                // Display the date when the sale occurred
+                // Display date sold
                 Tables\Columns\TextColumn::make('sold_at')
                     ->label('Sold At')
                     ->sortable(),

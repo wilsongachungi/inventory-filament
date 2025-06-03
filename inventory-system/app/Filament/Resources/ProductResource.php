@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Filament\Resources;
-
+use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use App\Models\Unit;
 use Filament\Tables;
@@ -10,6 +10,7 @@ use App\Models\Category;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
@@ -28,13 +29,31 @@ class ProductResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema(self::getProductForm()); // Use getProductForm for the form schema
+            ->schema(self::getProductForm());
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns(self::getProductTableColumns()); // Use a new function for table columns
+            ->columns(self::getProductTableColumns())
+            ->actions([
+                Tables\Actions\EditAction::make(),
+
+                Action::make('sell')
+                    ->label('Sell')
+                    ->icon('heroicon-m-currency-dollar')
+                    ->color('success')
+                    ->url(fn ($record) => route('filament.admin.resources.products.sell', [
+                        'record' => $record->getKey(),
+                        'tenant' => filament()->getTenant()->getKey(),
+                    ]))
+                    ->openUrlInNewTab(false), 
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getRelations(): array
@@ -50,6 +69,7 @@ class ProductResource extends Resource
             'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'sell' => Pages\SellProduct::route('/{record}/sell'),
         ];
     }
 
@@ -66,13 +86,22 @@ class ProductResource extends Resource
 
             Forms\Components\Select::make('category_id')
                 ->label(__('Category'))
-                ->relationship('category', 'name') // Relationship for category
+                ->relationship('category', 'name')
                 ->required(),
 
             Forms\Components\Select::make('unit_id')
                 ->label(__('Unit'))
-                ->relationship('unit', 'name') // Relationship for unit
-                ->required(),
+                ->relationship('unit', 'name')
+                ->nullable(),
+
+                Forms\Components\FileUpload::make('image')
+                ->label('Product Image')
+                ->disk('public')
+                ->directory('products')
+                ->visibility('public')
+                ->image()  // Ensures the file is an image
+                ->nullable(),
+
 
             Forms\Components\TextInput::make('quantity')
                 ->label(__('Stock Quantity'))
@@ -101,6 +130,13 @@ class ProductResource extends Resource
                 ->sortable()
                 ->searchable(),
 
+                Tables\Columns\ImageColumn::make('image')
+                ->label('Image')
+                ->square()
+                ->size(50)
+                ->getStateUsing(fn($record) => url('storage/' . $record->image)),
+
+
             Tables\Columns\TextColumn::make('code')
                 ->label(__('Product Code'))
                 ->sortable()
@@ -117,8 +153,11 @@ class ProductResource extends Resource
                 ->searchable(),
 
             Tables\Columns\TextColumn::make('quantity')
-                ->label(__('Stock Quantity'))
+                ->label('Stock Quantity')
                 ->sortable(),
+                // ->state(function ($record) {
+                //     return $record->stocks->sum('quantity'); // Sum the quantities from all stock batches
+                // }),
 
             Tables\Columns\TextColumn::make('regular_price')
                 ->label(__('Price'))
@@ -134,7 +173,9 @@ class ProductResource extends Resource
                 ->sortable(),
 
         ];
-
     }
-
+    public static function query()
+    {
+        return Product::with('stocks'); // Eager load the 'stocks' relationship
+    }
 }

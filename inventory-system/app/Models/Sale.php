@@ -14,6 +14,7 @@ class Sale extends Model
         'quantity',
         'total_price',
         'customer_id',
+        'unit_price',
         'sold_at'
     ];
 

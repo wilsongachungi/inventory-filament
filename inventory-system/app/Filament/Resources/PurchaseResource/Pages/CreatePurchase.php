@@ -17,7 +17,7 @@ class CreatePurchase extends CreateRecord
     {
         $purchase = Purchase::create([
             'tenant_id' => Filament::getTenant()->id,
-            'provider_id' => $data['provider_id'],
+            'customer_id' => $data['customer_id'],
             'invoice_no' => $data['invoice_no'],
             'purchase_date' => $data['purchase_date'],
             'total' => (float) $data['sub_total'],

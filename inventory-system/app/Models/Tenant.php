@@ -54,4 +54,11 @@ class Tenant extends Model
     {
         return $this->hasMany(Sale::class);
     }
+
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class);
+    }
+
+
 }

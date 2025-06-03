@@ -1,7 +1,9 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -26,10 +28,30 @@ class Product extends Model
         return $this->belongsTo(Unit::class);
     }
 
-    // Define the many-to-many relationship with Purchase
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class);
+    }
+
+
+
     public function purchases()
     {
         return $this->belongsToMany(Purchase::class, 'purchase_products')
-                    ->withPivot('price', 'quantity', 'data');  // Access pivot data like price, quantity, and additional data
+            ->withPivot('price', 'quantity', 'data');  
     }
+
+    public static function boot()
+{
+    parent::boot();
+
+    static::updating(function ($product) {
+        if ($product->isDirty('image')) {
+            // Delete old image if it exists and a new one is uploaded
+            if ($product->getOriginal('image')) {
+                Storage::disk('public')->delete($product->getOriginal('image'));
+            }
+        }
+    });
+}
 }

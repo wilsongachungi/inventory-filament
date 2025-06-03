@@ -38,5 +38,10 @@ class Purchase extends Model
         return $this->hasMany(InvoiceRecord::class);
     }
 
+    public function customer()
+{
+    return $this->belongsTo(Customer::class);
+}
+
 }
 
